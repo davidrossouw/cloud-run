@@ -1,0 +1,7 @@
+Flask==0.12
+flask-restful==0.3.5
+Flask-Cors
+Flask-HTTPAuth
+opencv-python 
+tensorflow==1.13.1
+keras==2.2.4

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1 id="display">Simpson classifier</h1>
+
+    <label for="avatar">Upload an image of a Simpsons Character</label>
+
+    <form method="post" enctype="multipart/form-data">
+        <div>
+            <label for="file">Choose image to upload:</label>
+            <input type="file" id="file" name="file" accept="image/png, image/jpeg">
+        </div>
+    </form>
+    <button onclick="fetch_get()">Check</button>
+    <button onclick="fetch_post()">Classify image!</button>
+    <p id="get-api"></p>
+    <p id="post-api"></p>
+    <script>
+        function fetch_get() {
+            fetch('http://127.0.0.1:5003/')
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (myJson) {
+                    document.getElementById('get-api').innerHTML = myJson['hello'];
+                })
+        }
+        function fetch_post() {
+            var input = document.querySelector('input[type="file"]')
+            var data = new FormData()
+            data.append('file', input.files[0])
+            data.append('user', 'hubot')
+
+            fetch('http://127.0.0.1:5003/upload', {
+                method: 'POST',
+                body: data
+            }).then(function (response) {
+                return response.json();
+            }).then(function (myJson) {
+                document.getElementById('post-api').innerHTML = myJson['result']['y_pred'];
+            })
+        }
+
+    </script>
+
+</body>
+
+</html>
