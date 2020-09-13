@@ -5,3 +5,4 @@ Flask-HTTPAuth
 opencv-python 
 tensorflow==1.13.1
 keras==2.2.4
+gunicorn  >= 20.0.4, < 21.0.0
