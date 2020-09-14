@@ -3,6 +3,7 @@ import json
 import logging
 import numpy as np
 import os
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'  # or any {'0', '1', '2'}
 import tensorflow as tf
 import tensorflow_hub as hub
 import time
@@ -12,7 +13,6 @@ from flask import Flask, request, jsonify
 
 
 app = Flask(__name__)
-
 tf.get_logger().setLevel(logging.ERROR)
 logger = logging.getLogger('app')
 
@@ -23,34 +23,36 @@ def authenticate_request():
     gcloud_auth(request.headers.get('Authorization'))
 
 
-# Load model
-MODEL_PATH = './model/efficientdet_d0_1/'
-print('loading model...')
-hub_model = hub.load(MODEL_PATH)
-print('model loaded!')
-logger.info("model %s loaded" % MODEL_PATH)
 
-# Load labels
-LABELS_PATH = './mscoco_label_map.json'
-with open(LABELS_PATH, 'r') as f:
-    label_map = json.load(f)
-
-label_map = {int(k):v for k,v in label_map.items()}
-DETECTION_THRESHOLD = 0.7
 
 @app.route('/', methods=['GET'])
 def hello():
     """Return a friendly HTTP greeting."""
     who = request.args.get('who', 'there')
     # Write a log entry
-    logger.info('who: %s', who)
+    logger.log('who: %s', who)
 
     return f'Hello {who}!\n'
 
 
 @app.route('/predict', methods=['POST'])
 def predict():
+    logger.setLevel(40)
     start = time.time()
+    DETECTION_THRESHOLD = 0.7
+
+    # Load labels
+    LABELS_PATH = './mscoco_label_map.json'
+    with open(LABELS_PATH, 'r') as f:
+        label_map = json.load(f)
+
+    label_map = {int(k):v for k,v in label_map.items()}
+
+    # Load model
+    MODEL_PATH = './model/efficientdet_d0_1/'
+    hub_model = hub.load(MODEL_PATH)
+    logger.setLevel(20) 
+    logger.info("model %s loaded" % MODEL_PATH)
 
     # Read image
     image = request.files["image"].read()
@@ -79,4 +81,4 @@ if __name__ == '__main__':
     # Used when running locally only. When deploying to Cloud Run,
     # a webserver process such as Gunicorn will serve the app.
     app.run(host='localhost', port=int(
-        os.environ.get('PORT', 8080)), debug=False)
+        os.environ.get('PORT', 8080)), debug=True)
