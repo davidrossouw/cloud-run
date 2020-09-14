@@ -7,7 +7,7 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import time
 
-# from auth import gcloud_auth
+from auth import gcloud_auth
 from flask import Flask, request, jsonify
 
 
@@ -17,10 +17,10 @@ tf.get_logger().setLevel(logging.ERROR)
 logger = logging.getLogger('app')
 
 
-# @app.before_request
-# def authenticate_request():
-#     """Authenticates every request."""
-#     gcloud_auth(request.headers.get('Authorization'))
+@app.before_request
+def authenticate_request():
+    """Authenticates every request."""
+    gcloud_auth(request.headers.get('Authorization'))
 
 
 # Load model

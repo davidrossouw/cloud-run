@@ -17,10 +17,9 @@
 
 gcloud run deploy object-detection \
   --image gcr.io/my-cloud-run-284115/object-detection:latest \
-  --memory 2Gi \
-  --region us-east1
-  --platform managed \
-  --allow-unauthenticated
+  --memory 4Gi \
+  --region us-east1 \
+  --platform managed
 
 ## cUrl
 
