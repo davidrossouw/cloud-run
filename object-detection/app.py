@@ -7,23 +7,25 @@ import tensorflow as tf
 import tensorflow_hub as hub
 import time
 
-from auth import gcloud_auth
+# from auth import gcloud_auth
 from flask import Flask, request, jsonify
 
 
 app = Flask(__name__)
 
+tf.get_logger().setLevel(logging.ERROR)
 logger = logging.getLogger('app')
 
 
-@app.before_request
-def authenticate_request():
-    """Authenticates every request."""
-    gcloud_auth(request.headers.get('Authorization'))
+# @app.before_request
+# def authenticate_request():
+#     """Authenticates every request."""
+#     gcloud_auth(request.headers.get('Authorization'))
 
 
 # LOAD MODEL
-MODEL_PATH = './model/faster_rcnn_inception_resnet_v2_640x640_1/'
+#MODEL_PATH = './model/faster_rcnn_inception_resnet_v2_640x640_1/'
+MODEL_PATH = './model/efficientdet_d0_1/'
 print('loading model...')
 hub_model = hub.load(MODEL_PATH)
 print('model loaded!')
@@ -44,7 +46,6 @@ def hello():
 def predict():
     start = time.time()
     image = request.files["image"].read()
-    print("image :" ,type(image))
     np_img = cv2.imdecode(np.frombuffer(image, dtype=np.uint8), cv2.IMREAD_COLOR)
     
     # read image file
@@ -70,4 +71,4 @@ if __name__ == '__main__':
     # Used when running locally only. When deploying to Cloud Run,
     # a webserver process such as Gunicorn will serve the app.
     app.run(host='localhost', port=int(
-        os.environ.get('PORT', 8080)), debug=True)
+        os.environ.get('PORT', 8080)), debug=False)

@@ -9,6 +9,9 @@ RUN python3 -m pip install --no-cache-dir -U pip && \
     python3 -m pip install --no-cache-dir -r /app/requirements.txt
 
 
+RUN apt-get update
+RUN apt-get install 'ffmpeg' 'libsm6' 'libxext6'  -y
+
 # Copy local code to the container image.
 WORKDIR /app
 COPY . .
