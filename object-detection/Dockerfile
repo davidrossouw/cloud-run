@@ -1,9 +1,13 @@
+# Code adapted from: https://codelabs.developers.google.com/codelabs/cloud-run-hello-python3/#0
+# Use an official lightweight Python image.
+# https://hub.docker.com/_/python
 FROM python:3.7-slim
 
 # Install production dependencies.
 COPY requirements.txt /app/requirements.txt
 RUN python3 -m pip install --no-cache-dir -U pip && \
     python3 -m pip install --no-cache-dir -r /app/requirements.txt
+
 
 RUN apt-get update
 RUN apt-get install 'ffmpeg' 'libsm6' 'libxext6'  -y

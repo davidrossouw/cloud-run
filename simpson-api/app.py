@@ -8,10 +8,16 @@ from flask_httpauth import HTTPBasicAuth
 import numpy as np
 import cv2
 import time
-from model import SimpsonClassifier
 
 import werkzeug
+import warnings
+warnings.filterwarnings('ignore',category=FutureWarning)
+from model import SimpsonClassifier
+
 import os
+
+
+
 
 # Instantiate the app
 app = Flask(__name__)
@@ -48,9 +54,14 @@ def read_image(file):
     return img
 
 
-class HelloWorld(Resource):
-    def get(self):
-        return {'hello': 'world!'}
+@app.route('/', methods=['GET'])
+def hello():
+    """Return a friendly HTTP greeting."""
+    who = request.args.get('who', 'there')
+    # Write a log entry
+    logging.info(f'who: {who}')
+
+    return f'Hello {who}!\n'
 
 
 class PhotoUpload(Resource):
@@ -88,9 +99,8 @@ class PhotoUpload(Resource):
         }
 
 
-api.add_resource(HelloWorld, '/')
 api.add_resource(PhotoUpload, '/upload')
 
 # Run the application
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(host='localhost', port=8080, debug=True)
