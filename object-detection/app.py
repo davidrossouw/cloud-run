@@ -12,6 +12,7 @@ import tensorflow_hub as hub
 import time
 
 from auth import gcloud_auth
+from google.cloud import storage
 from flask import Flask, request, jsonify
 from pytz import timezone
 
@@ -42,15 +43,28 @@ def convert_bounding_boxes(im_height, im_width, boxes):
   
   return image_boxes
 
+def upload_blob(img_data, destination_blob_name):
+    """Uploads a file to the bucket."""
+    # bucket_name = "your-bucket-name"
+    # source_file_name = "local/path/to/file"
+    # destination_blob_name = "storage-object-name"
+    storage_client = storage.Client.from_service_account_json('/Users/davidrossouw/Downloads/my-cloud-run-284115-09ac85e52b57.json')
+    bucket = storage_client.bucket('my-cloud-run-284115.appspot.com')
+    blob = bucket.blob(destination_blob_name)
+
+    blob.upload_from_string(img_data, content_type='image/jpg')
+
+    print(f"image uploaded to {destination_blob_name}")
+
 
 def append_row_to_sheet(data, worksheet):
 
     #insert on the next available row
-    timestamp = datetime.datetime.now(timezone('America/Toronto')).strftime("%Y/%m/%d %H:%M:%S")
+    timestamp = datetime.datetime.now(timezone('America/Toronto'))
     n_rows = len(data['detection_classes'])
     for row in range(n_rows):
         worksheet.append_row([
-            timestamp,
+            timestamp.strftime("%Y/%m/%d %H:%M:%S"),
             data['detection_classes'][row],
             data['detection_scores'][row],
             data['detection_boxes'][row][0],
@@ -58,11 +72,11 @@ def append_row_to_sheet(data, worksheet):
             data['detection_boxes'][row][2],
             data['detection_boxes'][row][3]
         ])
+    return timestamp
 
-    #worksheet.update(f"D{next_row}:G{next_row+n_rows}", [[d] for d in data['detection_boxes']])
-
-
+# TODO:
 def upload_image_to_gcs():
+    # .upload_from_string(data)
     pass
     
 
@@ -100,6 +114,13 @@ def predict():
 
     # Read image
     image = request.files["image"].read()
+
+    # Upload iumage to GCS
+    # bucket_name = "your-bucket-name"
+    # source_file_name = "local/path/to/file"
+    # destination_blob_name = "storage-object-name"
+    upload_blob(image, 'images/my_dog2.jpg')
+
     np_img = cv2.imdecode(np.frombuffer(image, dtype=np.uint8), cv2.IMREAD_COLOR)
     np_img = np.expand_dims(np_img, axis=0)
 
@@ -129,7 +150,10 @@ def predict():
     logger.info(msg)
 
     # Write to sheet
-    append_row_to_sheet(data=result, worksheet=worksheet)
+    timestamp = append_row_to_sheet(data=result, worksheet=worksheet)
+
+    # TODO: upload to gcs with timestamp in filename here...
+
 
     return jsonify(result)
 
