@@ -54,7 +54,7 @@ def convert_bounding_box(im_height, im_width, box):
   ymin, xmin, ymax, xmax = box
   return [int(xmin * im_width), int(ymin * im_height), int(xmax * im_width), int(ymax * im_height)]
 
-def upload_blob(img, object, timestamp):
+def upload_blob(img, obj, timestamp):
     """Uploads a file to the bucket."""
     logger.setLevel(20) 
     logger.info(f'image shape: {img.shape}')
@@ -65,7 +65,7 @@ def upload_blob(img, object, timestamp):
     #jpg_as_text = base64.b64encode(buffer)
 
     # Uploading from a local file using open()
-    blob = bucket.blob(f'{timestamp}.jpg')
+    blob = bucket.blob(f'{timestamp}_{obj}.jpg')
     blob.upload_from_string(buffer, content_type='image/jpg')
     url = blob.public_url
     logger.info(f"image uploaded")
@@ -73,7 +73,7 @@ def upload_blob(img, object, timestamp):
     return url
 
 
-def pusher(client, timestamp: str, data: dict) -> None:
+def pusher(client, data: dict) -> None:
     '''
     Push model results to new BQ table
     Table schema:
@@ -104,10 +104,10 @@ def pusher(client, timestamp: str, data: dict) -> None:
     }
     ]
     '''
-
+    logger.setLevel(20) 
     table_id = "my-cloud-run-284115.object_detection.results1"
     logger.info("Uploading data to BQ...")
-    errors = client.insert_rows_json(table_id, data, row_ids=[None] * len(data)) 
+    errors = client.insert_rows_json(table_id, data) 
     if errors == []:
         logger.info("New rows have been added.")
     else:
@@ -151,7 +151,7 @@ def test():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    logger.setLevel(40)
+    logger.setLevel(20)
     start = time.time()
     timestamp = datetime.datetime.now(timezone('America/Toronto')).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
 
@@ -173,17 +173,14 @@ def predict():
         return []
 
     results = [] # list of dicts
-    for row in range(NUM_RESULTS):
+    for i, row in enumerate(range(NUM_RESULTS)):
         obj = label_map[int(out['detection_classes'][0][row])],
+        obj = obj[0]+'_'+str(i)
         # crop image
         box = convert_bounding_box(np_img.shape[0], np_img.shape[1], out['detection_boxes'][0][row])
         # Upload detected object images to GCS bucket
-        # crop image
-
-        logger.info(f'box: {box}')
-        # np_img[box[2]:box[3], box[0]:box[1]]
-        url = upload_blob(np_img, obj, timestamp)
-        logger.info(f'blob uploaded: {url}')
+        url = upload_blob(img=np_img[box[1]:box[3], box[0]:box[2]], obj=obj, timestamp=timestamp)
+        logger.info(f'blob uploaded to: {url}')
 
         results.append({
             'timestamp': timestamp,
@@ -199,7 +196,7 @@ def predict():
     logger.info(f"Results: {results}")
 
     # Write to BQ
-    pusher(client=bq_client, timestamp=timestamp, data=results)
+    pusher(client=bq_client, data=results)
 
     return jsonify(results)
 
