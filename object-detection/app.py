@@ -101,6 +101,12 @@ def pusher(client, data: dict) -> None:
         "name": "url",
         "type": "STRING",
         "mode": "REQUIRED"
+    },
+    {
+        "description": "box",
+        "name": "box",
+        "type": "INTEGER",
+        "mode": "REPEATED"
     }
     ]
     '''
@@ -136,10 +142,12 @@ def test():
             {'timestamp': timestamp,
              'object': 'dog',
              'score': 0.75,
+             'box': [1,2,3,4],
              'url': 'www.url1.com'},
             {'timestamp': timestamp,
              'object': 'cat',
              'score': 0.85,
+             'box': [5,6,7,8],
              'url': 'www.url2.com'}
         ]
         return jsonify(results)
@@ -185,6 +193,7 @@ def predict():
         results.append({
             'timestamp': timestamp,
             'object': obj,
+            'box': box,
             'score': round(out['detection_scores'][0][row], 2).astype(float),
             'url': url
         })
