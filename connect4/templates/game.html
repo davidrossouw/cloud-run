@@ -47,19 +47,19 @@
 </head>
 
 <body>
-    {% if game == 'draw' %}
+    {% if winner == 'draw' %}
     <div>
         <h1>Draw!</h1>
     </div>
     {% endif %}
-    {% if game == 'X_wins' %}
+    {% if winner == 'R' %}
     <div>
-        <h1>X wins!</h1>
+        <h1>Red wins!</h1>
     </div>
     {% endif %}
-    {% if game == 'O_wins' %}
+    {% if winner == 'Y' %}
     <div>
-        <h1>O wins!</h1>
+        <h1>Yellow wins!</h1>
     </div>
     {% endif %}
     <div class="game-board">

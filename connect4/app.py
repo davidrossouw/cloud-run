@@ -16,11 +16,11 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 
+
 # Load ttt lookup table
-MOVES_PATH = './connect4_minimax.json'
+MOVES_PATH = './connect4_minimax_1.json'
 with open(MOVES_PATH, 'r') as f:
     moves = json.load(f)
-
 
 
 @app.route("/")
@@ -33,35 +33,35 @@ def index():
             ['-','-','-','-'],
             ['Y','R','Y','R']
         ]
-        session["winner"] = False
         session["turn"] = "Y"
-        session["game"] = 'in progress'
-        return render_template("game.html", board=session["board"], game=session["game"])
+        session["winner"] = None
+        return render_template("game.html", board=session["board"], winner=session["winner"])
 
     
-    ## Computer turn
-    # Check game
-    winner = checkWin(session['board'])
-    # Check if finished
-    if winner in ('Y', 'R'):
+    # Computer turn
+    session['winner'] = checkWin(session['board'])
+    # Check if player one with their move
+    if session['winner'] in ('Y', 'R'):
         #TODO: tidy up game=winner
-        return render_template("game.html", board=session["board"], game=winner)
-
+        return render_template("game.html", board=session["board"], winner=session["winner"])
 
     board_string = board2string(session["board"])
-    move = moves.get(board_string)
-    if not move:
-        print('move not found!')
+    print('board_string lookup:', board_string)
+    move = moves.get(board_string, None)
+    if move == None:
+        print('No best move!!')
         move = random.choice(moves_available(session['board']))
-    print(f'computer move found!!!: {move}')
+    
+    print(f'computer move: {move}')
 
     session['board'] = play(board=session['board'], player='R', column=move)
-    
 
-    # Check game
-    winner = checkWin(session['board'])
-        
-    return render_template("game.html", board=session["board"], game=session["game"])
+    # Check if computer one with their move
+    session['winner'] = checkWin(session['board'])
+    if session['winner'] in ('Y', 'R'):
+        return render_template("game.html", board=session["board"], winner=session["winner"])
+
+    return render_template("game.html", board=session["board"], winner=session["winner"])
 
 
 @app.route("/player_move/<int:column>")
