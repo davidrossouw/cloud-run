@@ -6,7 +6,7 @@ from flask import Flask, render_template, session, redirect, url_for
 from flask_session import Session
 from tempfile import mkdtemp
 
-from game import moves_available, play, checkWin, board2string, search, minimax
+from game import moves_available, play, checkWin, board2string, search, minimax, move_preferences
 
 app = Flask(__name__)
 
@@ -14,7 +14,7 @@ app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 
-MAX_DEPTH = 7
+MAX_DEPTH = 4
 
 Session(app)
 
@@ -24,12 +24,13 @@ def index():
     # Initial state
     if "board" not in session:
         session["board"] = [
-            ['-', '-', '-', '-'],
-            ['-', '-', '-', '-'],
-            ['-', '-', '-', '-'],
-            ['-', '-', '-', '-']
+            ['-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-'],
+            ['-', '-', '-', '-', '-', '-', '-'],
         ]
-        session["turn"] = "Y"
         session["winner"] = None
         return render_template("game.html", board=session["board"], winner=session["winner"])
 
@@ -38,20 +39,22 @@ def index():
     # Check if player one with their move
     if session['winner'] in ('Y', 'R'):
         # TODO: tidy up game=winner
+        print('WINNER: ', session['winner'])
         return render_template("game.html", board=session["board"], winner=session["winner"])
     # Minimax
     G = search(board=session["board"], max_depth=MAX_DEPTH)
-    G, move = minimax(G)
+    move = minimax(G)
 
     if move == None:
-        print('best move not found!')
-        move = random.choice(moves_available(session['board']))
+        move = move_preferences(moves_available(session['board']))
+        print('best move not found!!, selecting: ', move)
 
     session['board'] = play(board=session['board'], player='R', column=move)
 
     # Check if computer one with their move
     session['winner'] = checkWin(session['board'])
     if session['winner'] in ('Y', 'R'):
+        print('WINNER: ', session['winner'])
         return render_template("game.html", board=session["board"], winner=session["winner"])
 
     return render_template("game.html", board=session["board"], winner=session["winner"])

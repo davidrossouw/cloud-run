@@ -139,6 +139,25 @@ def checkWin(board):
     return None
 
 
+def move_preferences(moves_available: list):
+    if 3 in moves_available:
+        return 3
+    elif 2 in moves_available:
+        return 2
+    elif 4 in moves_available:
+        return 4
+    elif 1 in moves_available:
+        return 1
+    elif 5 in moves_available:
+        return 5
+    elif 0 in moves_available:
+        return 0
+    elif 6 in moves_available:
+        return 6
+    else:
+        return None
+
+
 def search(board, max_depth=4):  # -> DiGraph
     """
     Run game simulations from current game state to a maximum number
@@ -217,7 +236,7 @@ def minimax(G: nx.Graph):
             if G.nodes[n]['winner'] == 'R':
                 score = 100
             elif G.nodes[n]['winner'] == 'Y':
-                score = -200
+                score = -100
             else:
                 score = 0
             G.nodes[n].update({'score': score})
@@ -257,4 +276,12 @@ def minimax(G: nx.Graph):
             best_move = max(scores, key=lambda t: t[2])[1]
             G.nodes[n]['best_move'] = best_move
 
-    return G, G.nodes[0]['best_move']
+    # Analyze next move
+    move_scores = [(v, c['move'], G.nodes[v]['score'])
+                   for (u, v, c) in G.out_edges(0, data=True)]
+    # If all next moves (G[0]) have zero score, try center moves
+    if set([n[2] for n in move_scores]) == {0}:
+        return None
+
+    else:
+        return G.nodes[0]['best_move']
