@@ -59,15 +59,21 @@
     <div>
         <h1>Draw!</h1>
     </div>
-    {% endif %}
-    {% if winner == 'R' %}
+    {% elif winner == 'R' %}
     <div>
-        <h1>Red wins!</h1>
+        <h1>AI wins!
+            <p>
+                <img class="animated-gif" src="{{url_for('static', filename='robot_floss.gif')}}" width=250 />
+            </p>
+        </h1>
     </div>
-    {% endif %}
-    {% if winner == 'Y' %}
+    {% elif winner == 'Y' %}
     <div>
-        <h1>Yellow wins!</h1>
+        <h1>You win!</h1>
+    </div>
+    {% else %}
+    <div>
+        <h1> </h1>
     </div>
     {% endif %}
 
