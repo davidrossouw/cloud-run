@@ -15,8 +15,8 @@ DIALPAD_USER_ID = str(subprocess.check_output(
     "echo $DIALPAD_USER_ID", shell=True), 'utf-8').strip()
 MY_PHONE_NUMBER = str(subprocess.check_output(
     "echo $MY_PHONE_NUMBER", shell=True), 'utf-8').strip()
-#API_URL = 'https://object-detection-2xihskugxq-ue.a.run.app/predict'
-API_URL = 'http://0.0.0.0:8080/predict'
+API_URL = 'https://object-detection-2xihskugxq-ue.a.run.app/predict'
+#API_URL = 'http://0.0.0.0:8080/predict'
 
 
 def post_image(img) -> dict:
@@ -29,13 +29,9 @@ def post_image(img) -> dict:
     encode_state, img = cv2.imencode('.jpg', img, encode_params)
 
     # Prepare headers for http request
-    google_token = str(
-        subprocess.check_output(
-            "echo $(gcloud config config-helper --format 'value(credential.id_token)')", shell=True),
-        'utf-8').strip()
     url = API_URL
-    headers = {'Authorization': 'Bearer ' +
-               google_token, 'content_type': 'image/jpeg'}
+    headers = {'Authorization': 'Basic ZGF2aWQ6Y29va2llc2FuZGNyZWFt',
+               'content_type': 'image/jpeg'}
     files = {'image': img}
 
     # Post request
